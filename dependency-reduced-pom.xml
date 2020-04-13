@@ -35,7 +35,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>com.app.excl.ReadExcel2007</mainClass>
+                  <mainClass>com.app.excel.ReadExcel2007</mainClass>
                 </transformer>
               </transformers>
             </configuration>
