@@ -8,18 +8,20 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
-public class ReadExcel2007 {
+public class ReadExcel2007 implements Runnable {
+
     public static void main(String[] args) {
-        System.out.println(XSSFCell.class);
+        System.out.println("开启多线程请求任务。。。。");
+        ExecutorService executorService = Executors.newFixedThreadPool(20);
         HttpClient4 httpClient4 = new HttpClient4();
-//        String excelName = "D:\\work\\test001.xlsx";
-//        // 地址的列数
-//        int addressCellIndex = 5 - 1;
-//        // 要修改单元格列数
-//        int updateIndex = 15 - 1;
-//        int sheetIndex = 0;
         Properties properties = loadProps();
         // 地址的列数
         int addressCellIndex = Integer.parseInt(properties.getProperty("addressCellIndex")) - 1;
@@ -36,54 +38,47 @@ public class ReadExcel2007 {
             file.close();
             XSSFRow row = null;
 
+            CountDownLatch countDownLatch = new CountDownLatch(sheet.getLastRowNum());
+
             for (int i = 0; sheet.getRow(i) != null; i++) {
                 row = sheet.getRow(i);
                 XSSFCell cell = row.getCell(addressCellIndex);
                 String cellContent = cell.getStringCellValue();
                 if (i == 0) {
                     row.createCell(updateIndex).setCellValue("文件是否下线");
+                    row.createCell(updateIndex + 1).setCellValue("代码扫描原因");
                 }
                 if (cellContent.startsWith("https") || cellContent.startsWith("http")) {
-                    System.out.println("正在请求的地址："+cellContent);
-                    try {
-                        String s = httpClient4.doGet(cellContent);
-                        if (s != null) {
-                            if (s.contains("File was deleted") || s.contains("File not found")) {
-                                row.createCell(updateIndex).setCellValue("Removed");
-                                System.out.println("文件下线," + cellContent);
-                            }else {
-                                row.createCell(updateIndex).setCellValue("online");
-                                System.out.println("文件在线," + cellContent);
-                            }
-                        } else {
-                            row.createCell(updateIndex).setCellValue("Removed");
-                            System.out.println("文件下线," + cellContent);
-                        }
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                    }
+                    MyThread myThread = new MyThread(httpClient4, updateIndex, row, cellContent);
+                    myThread.setCountDownLatch(countDownLatch);
+                    executorService.submit(myThread);
                 }
             }
             //将数据写入文件
+            countDownLatch.await();
             FileOutputStream out = new FileOutputStream(excelName);
             workbook.write(out);
             out.flush();
             out.close();
             workbook.close();
             System.out.println("将结果写入excl文件中。。。。");
-            System.out.println("程序运行结果");
+            httpClient4.closeHttpClient();
+            System.out.println("关闭多线程。。。。");
+            executorService.shutdownNow();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            httpClient4.closeHttpClient();
+            System.out.println("程序运行结果");
         }
     }
+
+
     public static Properties loadProps() {
         Properties props = new Properties();
         InputStream in = null;
         try {
             //读取配置文件
-            in =new BufferedInputStream(new FileInputStream("./readExcel.properties"));
+            in = new BufferedInputStream(new FileInputStream("./readExcel.properties"));
             props.load(in);
         } catch (Exception e) {
             System.out.println("读取jdbc.properties时出现异常：" + e);
@@ -97,5 +92,10 @@ public class ReadExcel2007 {
             }
         }
         return props;
+    }
+
+    @Override
+    public void run() {
+
     }
 }

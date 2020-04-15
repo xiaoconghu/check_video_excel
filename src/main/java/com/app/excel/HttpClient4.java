@@ -9,55 +9,73 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
+import javax.swing.text.Document;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.Map.Entry;
 
 public class HttpClient4 {
-    public CloseableHttpClient httpClient;
-    public HttpClient4(){
-        this.httpClient = this.getHttpClient();
+    public static CloseableHttpClient httpClient;
+
+    public HttpClient4() {
+        httpClient = this.getHttpClient();
     }
-    public String doGet(String url) {
+
+    public static String doGet(String url) {
         CloseableHttpResponse response = null;
         String result = null;
+        InputStream in = null;
         try {
             // 通过址默认配置创建一个httpClient实例
-            // httpClient = HttpClients.createDefault();
+//            httpClient = HttpClients.createDefault();
             // 创建httpGet远程连接实例
             HttpGet httpGet = new HttpGet(url);
             // 设置请求头信息，鉴权
             // httpGet.setHeader("Authorization", "Bearer da3efcbf-0845-4fe3-8aba-ee040be542c0");
             // 设置配置请求参数
-            RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(10000)// 连接主机服务超时时间
-                    .setConnectionRequestTimeout(10000)// 请求超时时间
-                    .setSocketTimeout(10000)// 数据读取超时时间
+            RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(350000)// 连接主机服务超时时间
+                    .setConnectionRequestTimeout(350000)// 请求超时时间
+                    .setSocketTimeout(350000)// 数据读取超时时间
                     .build();
             // 为httpGet实例设置配置
             httpGet.setConfig(requestConfig);
             // 执行get请求得到返回对象
-            response = this.httpClient.execute(httpGet);
+            response = httpClient.execute(httpGet);
             // 通过返回对象获取返回数据
             HttpEntity entity = response.getEntity();
+            if( entity != null ){
+                in = entity.getContent();
+            }
+            if(response.getStatusLine().getStatusCode() !=200){
+                httpGet.abort();
+            }
+            if(response.getStatusLine().getStatusCode()==302){
+                return doGet(response.getHeaders("Location")[0].getValue());
+            }
             // 通过EntityUtils中的toString方法将结果转换为字符串
-            result = EntityUtils.toString(entity);
+            result = EntityUtils.toString(entity, "UTF-8");
             // 在控制台打印出地址返回的结果
-            System.out.println("地址返回的结果："+result);
+//            System.out.println("地址返回的结果："+result);
         } catch (ClientProtocolException e) {
+            e.printStackTrace();
             System.out.println("地址请求失败！");
         } catch (IOException e) {
+            e.printStackTrace();
             System.out.println("地址请求失败！");
         } finally {
             // 关闭资源
             if (null != response) {
                 try {
                     response.close();
+                    in.close();
                 } catch (IOException e) {
                     System.out.println("地址请求失败！");
                 }
@@ -74,16 +92,16 @@ public class HttpClient4 {
     }
 
     public CloseableHttpClient getHttpClient() {
-        if (this.httpClient != null) {
+        if (httpClient != null) {
             return httpClient;
         } else {
-            return HttpClients.createDefault();
+            return HttpClients.createMinimal();
         }
     }
 
     public void closeHttpClient() {
         try {
-            this.httpClient.close();
+            httpClient.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
