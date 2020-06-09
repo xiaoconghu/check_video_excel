@@ -72,6 +72,14 @@ public class MyThread implements Runnable {
                     row.createCell(updateIndex + 1).setCellValue("online found 保存到网盘");
                     System.out.println(row.getRowNum()+"文件在线,online found 保存到网盘");
 
+                } else if(s.contains("Xin lỗi bạn! File này đang bảo dưỡng, bạn có thể trở lại sau, cảm ơn bạn!")){
+                    row.createCell(updateIndex).setCellValue("Removed");
+                    row.createCell(updateIndex + 1).setCellValue("Xin lỗi bạn! File này đang bảo dưỡng");
+                    System.out.println("Xin lỗi bạn! File này đang bảo dưỡng");
+                } else if(s.contains("Xin lỗi bạn! File này đang bảo dưỡng,")){
+                    row.createCell(updateIndex).setCellValue("Removed");
+                    row.createCell(updateIndex + 1).setCellValue("Xin lỗi bạn! File này đang bảo dưỡng");
+                    System.out.println("Xin lỗi bạn! File này đang bảo dưỡng");
                 } else {
                     row.createCell(updateIndex).setCellValue("not found");
                     row.createCell(updateIndex + 1).setCellValue("目前无法判断");
