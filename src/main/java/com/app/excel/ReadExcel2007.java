@@ -8,17 +8,14 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class ReadExcel2007 implements Runnable {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnsupportedEncodingException {
         System.out.println("开启多线程请求任务。。。。");
         ExecutorService executorService = Executors.newFixedThreadPool(20);
         HttpClient4 httpClient4 = new HttpClient4();
@@ -29,6 +26,10 @@ public class ReadExcel2007 implements Runnable {
         int updateIndex = Integer.parseInt(properties.getProperty("updateIndex")) - 1;
         int sheetIndex = Integer.parseInt(properties.getProperty("sheetIndex")) - 1;
         String excelName = properties.getProperty("excelPath");
+        String offlineKeyword =  new String(properties.getProperty("offlineKeyword").getBytes("ISO-8859-1"), "UTF-8");
+        String[] offlineKeywords = offlineKeyword.split("#");
+        String onlineKeyword = new String(properties.getProperty("onlineKeyword").getBytes("ISO-8859-1"), "UTF-8");
+        String[] onlineKeywords = onlineKeyword.split("#");
         try {
             FileInputStream file = new FileInputStream(excelName);
             // 延迟解析比率
@@ -37,7 +38,7 @@ public class ReadExcel2007 implements Runnable {
             XSSFSheet sheet = workbook.getSheetAt(sheetIndex);
             file.close();
             XSSFRow row = null;
-
+            System.out.println("一共"+sheet.getLastRowNum()+"条数据");
             CountDownLatch countDownLatch = new CountDownLatch(sheet.getLastRowNum());
 
             for (int i = 0; sheet.getRow(i) != null; i++) {
@@ -49,7 +50,7 @@ public class ReadExcel2007 implements Runnable {
                     row.createCell(updateIndex + 1).setCellValue("代码扫描原因");
                 }
                 if (cellContent.startsWith("https") || cellContent.startsWith("http")) {
-                    MyThread myThread = new MyThread(httpClient4, updateIndex, row, cellContent);
+                    MyThread myThread = new MyThread(httpClient4, updateIndex, row, cellContent,offlineKeywords,onlineKeywords);
                     myThread.setCountDownLatch(countDownLatch);
                     executorService.submit(myThread);
                 }
