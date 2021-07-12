@@ -29,6 +29,12 @@ public class testDemo {
 
         System.out.println(newUrl);
         HttpClient4 httpClient4 = new HttpClient4();
-        httpClient4.doGet("ssss");
+        String s = httpClient4.doGet("https://pan.baidu.com/share/init?surl=kEOfp6dMXrmMRhFiXKiixw");
+        System.out.println(s);
+        System.out.println("\n" +
+                "     |\"|          _   _             ...      \n" +
+                "    _|_|_        '\\\\-//`       o,*,(o o)     \n" +
+                "    (o o)         (o o)       8(o o)(_)Ooo   \n" +
+                "ooO--(_)--Ooo-ooO--(_)--Ooo-ooO-(_)---Ooo----\n");
     }
 }

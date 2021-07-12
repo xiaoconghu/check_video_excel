@@ -36,7 +36,7 @@ public class HttpClient4 {
             // 通过址默认配置创建一个httpClient实例
 //            httpClient = HttpClients.createDefault();
             // 创建httpGet远程连接实例
-            HttpGet httpGet = new HttpGet(convertUrl("https://pan.baidu.com/s/1tnyZmiL5jsagvp3ABlaKYg?fid=834756686446846"));
+            HttpGet httpGet = new HttpGet(url);
             // 设置请求头信息，鉴权
             // httpGet.setHeader("Authorization", "Bearer da3efcbf-0845-4fe3-8aba-ee040be542c0");
             // 设置配置请求参数
@@ -57,14 +57,21 @@ public class HttpClient4 {
                 httpGet.abort();
             }
             if (response.getStatusLine().getStatusCode() == 302) {
-                return doGet(response.getHeaders("Location")[0].getValue());
+                String location = response.getHeaders("Location")[0].getValue();
+                if(!location.contains("http")){
+                    location = "https://pan.baidu.com"+ location;
+                }
+                return doGet(location);
+
             }
             // 通过EntityUtils中的toString方法将结果转换为字符串
             result = EntityUtils.toString(entity, "UTF-8");
         } catch (ClientProtocolException e) {
             System.out.println("地址请求失败！");
+            System.out.println(url);
         } catch (IOException e) {
             System.out.println("地址请求失败");
+            System.out.println(url);
         } finally {
             // 关闭资源
             if (null != response) {
@@ -73,6 +80,7 @@ public class HttpClient4 {
                     in.close();
                 } catch (IOException e) {
                     System.out.println("地址请求失败！");
+                    System.out.println(url);
                 }
             }
         }

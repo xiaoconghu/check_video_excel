@@ -2,6 +2,7 @@ package com.app.excel;
 
 
 import org.apache.poi.openxml4j.util.ZipSecureFile;
+import org.apache.poi.util.StringUtil;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -16,6 +17,11 @@ import java.util.concurrent.Executors;
 public class ReadExcel2007 implements Runnable {
 
     public static void main(String[] args) throws UnsupportedEncodingException {
+        System.out.println("\n" +
+                "                               |               !!!                    \n" +
+                "  `  _ ,  '       ()_()        |.===.       `  _ _  '       ()_()     \n" +
+                " -  (o)o)  -      (o o)        {}o o{}     -  (OXO)  -      (o o)     \n" +
+                "-ooO'(_)--Ooo-ooO--`o'--Ooo-ooO--(_)--Ooo-ooO--(_)--Ooo-ooO--`o'--Ooo-\n");
         System.out.println("开启多线程请求任务。。。。");
         ExecutorService executorService = Executors.newFixedThreadPool(20);
         HttpClient4 httpClient4 = new HttpClient4();
@@ -27,8 +33,14 @@ public class ReadExcel2007 implements Runnable {
         int sheetIndex = Integer.parseInt(properties.getProperty("sheetIndex")) - 1;
         String excelName = properties.getProperty("excelPath");
         String offlineKeyword =  new String(properties.getProperty("offlineKeyword").getBytes("ISO-8859-1"), "UTF-8");
+        if(offlineKeyword.isEmpty()){
+            offlineKeyword = "share_nofound_des#此链接分享内容可能因为涉及侵权#你所访问的页面不存在了#此链接分享内容可能因为涉及侵权#啊哦，你来晚了";
+        }
         String[] offlineKeywords = offlineKeyword.split("#");
         String onlineKeyword = new String(properties.getProperty("onlineKeyword").getBytes("ISO-8859-1"), "UTF-8");
+        if(onlineKeyword.isEmpty()){
+            onlineKeyword = "video#video-content#请输入提取码#保存到网盘#失效时间：永久有效";
+        }
         String[] onlineKeywords = onlineKeyword.split("#");
         try {
             FileInputStream file = new FileInputStream(excelName);
@@ -69,6 +81,11 @@ public class ReadExcel2007 implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            System.out.println("\n" +
+                    "     |\"|          _   _             ...      \n" +
+                    "    _|_|_        '\\\\-//`       o,*,(o o)     \n" +
+                    "    (o o)         (o o)       8(o o)(_)Ooo   \n" +
+                    "ooO--(_)--Ooo-ooO--(_)--Ooo-ooO-(_)---Ooo----\n");
             System.out.println("程序运行结果");
         }
     }
